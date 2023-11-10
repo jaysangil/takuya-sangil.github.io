@@ -1,1 +1,31 @@
-Hello Test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" charset="utf-8">
+        (function (g, e, n, es, ys) {
+            g['_genesysJs'] = e;
+            g[e] = g[e] || function () {
+                (g[e].q = g[e].q || []).push(arguments)
+            };
+            g[e].t = 1 * new Date();
+            g[e].c = es;
+            ys = document.createElement('script'); ys.async = 1; ys.src = n; ys.charset = 'utf-8'; document.head.appendChild(ys);
+        })(window, 'Genesys', 'https://apps.usw2.pure.cloud/genesys-bootstrap/genesys.min.js', {
+            environment: 'prod-usw2',
+            deploymentId: '26793471-a103-4332-9298-fce44d2bb593'
+        });
+    </script>
+</head>
+<body>
+    <!-- Add the button here with the specified color -->
+    <button onclick="webMessage()" style="background-color: #FF6C22;">Web Messenger button</button>
+
+    <script>
+        // Add your web message functionality here
+        function webMessage() {
+            // Your web message code goes here
+            alert('Web Messenger button clicked!');
+        }
+    </script>
+</body>
+</html>
