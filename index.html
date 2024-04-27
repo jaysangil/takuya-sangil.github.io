@@ -1,15 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Correct Font Awesome import -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #ecf0f1;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+          background: linear-gradient(to right, #f39c12, #e74c3c); /* Gradient with shades of orange and red */
+          color: #fff; /* White text for contrast */
+          padding: 20px; /* Padding around the text */
+          text-align: center; /* Center-align the text */
+          font-size: 24px; /* Slightly larger font size */
+          text-transform: uppercase; /* Uppercase for all text */
+          border-radius: 10px; /* Rounded corners for a softer look */
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Subtle shadow effect for depth */
+          transition: all 0.3s ease; /* Smooth transition for hover effects */
+      }
+
+      h1::before {
+        content: "\f0c2"; /* Cloud icon from Font Awesome */
+        font-family: 'Font Awesome 6 Free'; /* Ensure correct font */
+        font-weight: 900; /* Font weight for Font Awesome */
+        padding-right: 10px; /* Space between icon and text */
+        vertical-align: middle; /* Align icon properly */
+      }
+      
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+            background-color: #2c3e50; /* Primary color */
+        }
+
+        nav ul li {
+          margin: 10px 0;
+          background: linear-gradient(to right, #3498db, #2c3e50); /* Matching gradient */
+          padding: 10px 20px; /* Padding for spacing */
+          border-radius: 10px; /* Rounded corners */
+          transition: all 0.3s ease; /* Smooth transition */
+      }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            padding: 10px 20px;
+            border: 2px solid transparent;
+            background-color: #3498db; /* Secondary color */
+            border-radius: 5px;
+            display: inline-block;
+            transition: all 0.3s ease, color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+          background: linear-gradient(to right, #e67e22, #e74c3c); /* Gradient change on hover */
+          border-radius: 10px;
+          box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Shadow effect */
+        }
+    </style>
+
+    <!-- Your existing scripts -->
+    <script type="text/javascript" charset="utf-8">
+        (function (g, e, n, es, ys) {
+          g['_genesysJs'] = e;
+          g[e] = g[e] || function () {
+            (g[e].q = g[e].q || []).push(arguments);
+          };
+          g[e].t = 1 * new Date();
+          g[e].c = es;
+          ys = document.createElement('script');
+          ys.async = 1;
+          ys.src = n;
+          ys.charset = 'utf-8';
+          document.head.appendChild(ys);
+        })(window, 'Genesys', 'https://apps.usw2.pure.cloud/genesys-bootstrap/genesys.min.js', {
+          environment: 'prod-usw2',
+          deploymentId: '26793471-a103-4332-9298-fce44d2bb593'
+        });
+    </script>
+
     <script type="text/javascript" charset="utf-8">
         (function (g, e, n, es, ys) {
             g['_genesysJs'] = e;
             g[e] = g[e] || function () {
-                (g[e].q = g[e].q || []).push(arguments)
+                (g[e].q = g[e].q || []).push(arguments);
             };
             g[e].t = 1 * new Date();
             g[e].c = es;
-            ys = document.createElement('script'); ys.async = 1; ys.src = n; ys.charset = 'utf-8'; document.head.appendChild(ys);
+            ys = document.createElement('script');
+            ys.async = 1;
+            ys.src = n;
+            ys.charset = 'utf-8';
+            document.head.appendChild(ys);
         })(window, 'Genesys', 'https://apps.usw2.pure.cloud/genesys-bootstrap/genesys.min.js', {
             environment: 'prod-usw2',
             deploymentId: '26793471-a103-4332-9298-fce44d2bb593'
@@ -17,15 +108,24 @@
     </script>
 </head>
 <body>
-    <!-- Add the button here with the specified color -->
-    <button onclick="webMessage()" style="background-color: #FF6C22;">Web Messenger button</button>
 
-    <script>
-        // Add your web message functionality here
-        function webMessage() {
-            // Your web message code goes here
-            alert('Web Messenger button clicked!');
-        }
-    </script>
+<h1>Messaging and Chat test links</h1>
+
+<nav>
+    <ul>
+        <li><a href="Web-Messaging.html">Web Messaging Test</a></li>
+    </ul>
+</nav>
+
+<!-- Final script -->
+<script>
+    (function(a,t,c,l,o,u,d){a['_genesysJourneySdk']=o;a[o]=a[o]||function(){
+    (a[o].q=a[o].q||[]).push(arguments)},a[o].l=1* new Date();u=t.createElement(c),
+    d=t.getElementsByTagName(c)[0];u.async=1;u.src=l;u.charset='utf-8';d.parentNode.insertBefore(u,d);
+    })(window, document, 'https://apps.usw2.pure.cloud/journey/sdk/js/web/v1/ac.js', 'ac');
+    ac('init', '977ce6f8-947b-4f2a-9aaf-70c5281aeff2', { region: 'usw2' });
+    ac('pageview');
+</script>
+
 </body>
 </html>
