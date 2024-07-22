@@ -1,5 +1,5 @@
 export default {
-  clientId: 'e7de8a75-62bb-43eb-9063-38509f8c21af',
+  clientId: '05e2fc28-91bc-4374-98ad-21ee9a0f19ac',
   // redirectUri: 'https://genesyscloudblueprints.github.io/agent-monitoring-app-blueprint/'
-  redirectUri: 'http://localhost:8080/'
+  redirectUri: 'https://jaysangil.github.io/takuya-sangil.github.io/agent-monitoring-app'
 }
