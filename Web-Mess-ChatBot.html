@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact Form</title>
+
+  <!-- Inline CSS for styling -->
+  <style>
+    /* Gradient background and centered content */
+    body {
+      background: linear-gradient(to bottom, #ff7f50, #ff4500);
+      font-family: 'Arial', sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;  /* Center horizontally */
+      align-items: center;  /* Center vertically */
+      height: 100vh;  /* Full viewport height */
+    }
+
+    /* Style the form container */
+    .form-container {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;  /* Align vertically */
+      align-items: center;  /* Center contents */
+      width: 300px;  /* Consistent width */
+    }
+
+    /* Style the form headings */
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    /* Style the input fields */
+    .form-container input {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin: 10px 0;  /* Consistent spacing between inputs */
+      width: 93%;  /* Fill the container's width */
+      transition: border 0.3s ease;
+    }
+
+    /* Change border color on focus */
+    .form-container input:focus {
+      border-color: #ff4500;
+      outline: none;
+    }
+
+    /* Style the button */
+    .form-container button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #ff4500;
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      width: 100%;  /* Fill the container's width */
+    }
+
+    /* Change background color on hover */
+    .form-container button:hover {
+      background: #e03e00;
+    }
+  </style>
+  
+  <script type="text/javascript" charset="utf-8">
+    (function (g, e, n, es, ys) {
+      g['_genesysJs'] = e;
+      g[e] = g[e] || function () {
+          (g[e].q = g[e].q || []).push(arguments);
+      };
+
+      g[e].t = new Date().getTime();
+      g[e].c = es;
+
+      ys = document.createElement('script');
+      ys.async = true;  /* Asynchronous loading */
+      ys.src = n;
+      ys.charset = 'utf-8';
+      document.head.appendChild(ys);
+    })(window, 'Genesys', 'https://apps.usw2.pure.cloud/genesys-bootstrap/genesys.min.js', {
+        environment: 'prod-usw2',
+        deploymentId: '26793471-a103-4332-9298-fce44d2bb593'
+    });
+
+    /* Function to hide Genesys Messenger on page load */
+    function hideMessenger() {
+      Genesys("command", "Messenger.close");
+    }
+
+    /* Function to toggle Genesys Messenger and set custom attributes */
+    function toggleMessenger() {
+      var firstName = document.getElementById('first-name').value;
+      var lastName = document.getElementById('last-name').value;
+      var emailAddress = document.getElementById('email-address').value;
+
+      Genesys("command", "Messenger.open");
+
+      Genesys("command", "Database.set", {
+        messaging: {
+          customAttributes: {
+            name: firstName,
+            surname: lastName,
+            email: emailAddress
+          }
+        }
+      });
+    }
+
+    /* Conditional logic for business cases */
+    var businessLogic = false;
+    if (businessLogic) {
+      Genesys("subscribe", "Launcher.ready", function () {
+        setTimeout(function () {
+          Genesys(
+            'command',
+            'Launcher.show',
+            {},
+            () => {
+              console.log('Launcher opened');
+            },
+            (error) => {
+              console.error("Couldn't open launcher.", error);
+            }
+          );
+        }, 1000);  /* 1-second delay */
+      });
+    }
+
+    /* Subscribe to "Launcher.hidden" event */
+    Genesys("subscribe", "Launcher.hidden", function () {
+      console.log('Messenger is hidden');
+    });
+  </script>
+</head>
+<body onload="hideMessenger()">
+
+<!-- Centered form container -->
+<div class="form-container">
+  <h2>Web Messaging Test</h2>
+
+  <!-- Form with aligned input fields -->
+  <form>
+    <input type="text" id="first-name" placeholder="First Name" required>
+    <input type="text" id="last-name" placeholder="Last Name" required>
+    <input type="email" id="email-address" placeholder="Email Address" required>
+
+    <!-- Test Button to trigger Genesys Messenger -->
+    <button type="button" id="custom-launcher" onclick="toggleMessenger()">
+      Launch Messenger
+    </button>
+  </form>
+</div>
+
+<!-- Script block for Genesys and JavaScript interactions -->
+<script type="text/javascript" charset="utf-8">
+  (function (g, e, n, es, ys) {
+    g['_genesysJs'] = e;
+    g[e] = g[e] || function () {
+        (g[e].q = g[e].q || []).push(arguments);
+    };
+    g[e].t = 1 * new Date();
+    g[e].c = es;
+    ys = document.createElement('script'); ys.async = 1; ys.src = n; ys.charset = 'utf-8'; document.head.appendChild(ys);
+  })(window, 'Genesys', 'https://apps.usw2.pure.cloud/genesys-bootstrap/genesys.min.js', {
+    environment: 'usw2',
+    deploymentId: '81b9317a-1108-4ecd-80df-c3edfb7f8b84'
+  });
+</script>
+
+<!-- Script for Genesys Journey SDK -->
+<script>
+  (function(a, t, c, l, o, u, d) { a['_genesysJourneySdk'] = o;
+  a[o] = a[o] || function() {
+    (a[o].q = a[o].q ||[]).push(arguments)
+  };
+  a[o].l = 1 * new Date();
+  
+  u = t.createElement('script');
+  u.async = 1;
+  u.src = l;
+  u.charset = 'utf-8';
+  
+  d = t.getElementsByTagName('script')[0];
+  d.parentNode.insertBefore(u, d); 
+  })(window, document, 'https://apps.usw2.pure.cloud/journey/sdk/js/web/v1/ac.js', 'ac');
+  
+  ac('init', '977ce6f8-947b-4f2a-9aaf-70c5281aeff2', { region: 'usw2' });
+  ac('pageview');
+</script>
+
+</body>
+</html>
