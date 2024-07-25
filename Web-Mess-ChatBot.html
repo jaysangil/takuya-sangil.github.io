@@ -71,25 +71,20 @@
       background: #e03e00;
     }
   </style>
-  
+
+  <!-- Script block for Genesys and JavaScript interactions -->
   <script type="text/javascript" charset="utf-8">
     (function (g, e, n, es, ys) {
       g['_genesysJs'] = e;
       g[e] = g[e] || function () {
           (g[e].q = g[e].q || []).push(arguments);
       };
-
-      g[e].t = new Date().getTime();
+      g[e].t = 1 * new Date();
       g[e].c = es;
-
-      ys = document.createElement('script');
-      ys.async = true;  /* Asynchronous loading */
-      ys.src = n;
-      ys.charset = 'utf-8';
-      document.head.appendChild(ys);
+      ys = document.createElement('script'); ys.async = 1; ys.src = n; ys.charset = 'utf-8'; document.head.appendChild(ys);
     })(window, 'Genesys', 'https://apps.usw2.pure.cloud/genesys-bootstrap/genesys.min.js', {
-        environment: 'prod-usw2',
-        deploymentId: '26793471-a103-4332-9298-fce44d2bb593'
+      environment: 'usw2',
+      deploymentId: '81b9317a-1108-4ecd-80df-c3edfb7f8b84'
     });
 
     /* Function to hide Genesys Messenger on page load */
@@ -160,22 +155,6 @@
     </button>
   </form>
 </div>
-
-<!-- Script block for Genesys and JavaScript interactions -->
-<script type="text/javascript" charset="utf-8">
-  (function (g, e, n, es, ys) {
-    g['_genesysJs'] = e;
-    g[e] = g[e] || function () {
-        (g[e].q = g[e].q || []).push(arguments);
-    };
-    g[e].t = 1 * new Date();
-    g[e].c = es;
-    ys = document.createElement('script'); ys.async = 1; ys.src = n; ys.charset = 'utf-8'; document.head.appendChild(ys);
-  })(window, 'Genesys', 'https://apps.usw2.pure.cloud/genesys-bootstrap/genesys.min.js', {
-    environment: 'usw2',
-    deploymentId: '81b9317a-1108-4ecd-80df-c3edfb7f8b84'
-  });
-</script>
 
 <!-- Script for Genesys Journey SDK -->
 <script>
