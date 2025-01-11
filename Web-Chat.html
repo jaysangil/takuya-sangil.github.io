@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Genesys Cloud WebChat 2.0 Sample</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        header h1 {
+            color: #444;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        nav ul li {
+            display: inline;
+            margin: 0 10px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #0078d7;
+            font-weight: bold;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #0078d7;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056a3;
+        }
+
+        #loading-indicator {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>GC Web Chat 2.0</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Messaging and Chat Test Links</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <button id="chat-button" onclick="startChat()">Start Chat</button>
+        <div id="loading-indicator">Loading chat...</div>
+    </main>
+
+    <!-- Genesys WebChat Configuration -->
+    <script>
+        window._genesys = {
+            widgets: {
+                main: {
+                    cookieOptions: {
+                        secure: true,
+                        domain: "takuya-sangil.github.io",
+                        path: '/',
+                        sameSite: "Strict"
+                    }
+                },
+                webchat: {
+                    transport: {
+                        type: "purecloud-v2-sockets",
+                        dataURL: "https://api.usw2.pure.cloud",
+                        deploymentKey: "4abd04ca-ca93-4eaa-8ac7-44010179070d",
+                        orgGuid: "977ce6f8-947b-4f2a-9aaf-70c5281aeff2",
+                        interactionData: {
+                            routing: {
+                                targetType: "QUEUE",
+                                targetAddress: "Cloud-API",
+                                priority: 2
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        let customPlugin;
+
+        function initializeCXBus() {
+            CXBus.configure({
+                debug: true,
+                pluginsPath: 'https://apps.usw2.pure.cloud/widgets/9.0/plugins/'
+            });
+            CXBus.loadPlugin('widgets-core');
+
+            // Register the custom plugin
+            customPlugin = CXBus.registerPlugin('Custom');
+
+            // Preload WebChat to reduce delay
+            customPlugin.command('WebChatService.subscribe', {});
+
+            // Set up event listeners for chat events
+            setupChatEventListeners();
+        }
+
+        function getAdvancedConfig() {
+            return {
+                "form": {
+                    "autoSubmit": false,
+                    "firstname": "Ruka",
+                    "lastname": "Kawai",
+                    "email": "kawairuka@gmail.com",
+                    "subject": ""
+                },
+                "formJSON": {
+                    "wrapper": "<table></table>",
+                    "inputs": [
+                        {
+                            "id": "cx_webchat_form_firstname",
+                            "name": "firstname",
+                            "maxlength": "100",
+                            "placeholder": "Required",
+                            "label": "First Name"
+                        },
+                        {
+                            "id": "cx_webchat_form_lastname",
+                            "name": "lastname",
+                            "maxlength": "100",
+                            "placeholder": "Required",
+                            "label": "Last Name"
+                        },
+                        {
+                            "id": "cx_webchat_form_email",
+                            "name": "email",
+                            "maxlength": "100",
+                            "placeholder": "Optional",
+                            "label": "Email"
+                        },
+                        {
+                            "id": "cx_webchat_form_subject",
+                            "name": "subject",
+                            "maxlength": "100",
+                            "placeholder": "Optional",
+                            "label": "Subject"
+                        }
+                    ]
+                }
+            };
+        }
+
+        function startChat() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+
+            // Show the loading indicator
+            loadingIndicator.style.display = 'block';
+
+            // Try to open the chat
+            customPlugin.command('WebChat.open', getAdvancedConfig())
+                .then(() => {
+                    console.log('Chat window opened successfully.');
+                    loadingIndicator.style.display = 'none'; // Hide loading when chat opens
+                })
+                .catch((err) => {
+                    console.error('Error opening chat:', err);
+                    loadingIndicator.style.display = 'none'; // Hide loading even if there’s an error
+                });
+        }
+
+        function setupChatEventListeners() {
+            // Listen for WebChat closed events to hide the loading indicator
+            customPlugin.subscribe('WebChat.closed', () => {
+                console.log('Chat has been closed.');
+                const loadingIndicator = document.getElementById('loading-indicator');
+                loadingIndicator.style.display = 'none'; // Hide loading if chat is closed
+            });
+        }
+    </script>
+
+    <!-- CXBus Script -->
+    <script async src="https://apps.usw2.pure.cloud/widgets/9.0/cxbus.min.js" onload="initializeCXBus()"></script>
+
+    <!-- Journey SDK Script -->
+    <script async src="https://apps.usw2.pure.cloud/journey/sdk/js/web/v1/ac.js" onload="initializeJourneySDK()"></script>
+    <script>
+        function initializeJourneySDK() {
+            ac('init', '977ce6f8-947b-4f2a-9aaf-70c5281aeff2', { region: 'usw2' });
+            ac('pageview');
+        }
+    </script>
+</body>
+</html>
