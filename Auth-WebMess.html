@@ -426,7 +426,7 @@
 						issuer: `${sOktaurl}`,
 						scopes: aScopes,
 						pkce: bPKCE ? true : false,
-						responseType: 'code',
+						responseType: 'code'
 					};
 
 					if (maxAge) {
@@ -491,87 +491,175 @@
 
 			// AuthProvider plugin written by the brand
 
-			Genesys('registerPlugin', 'AuthProvider', (AuthProvider) => {
-				// COMMANDS
+			// OpenId Authentication setup
 
-				// getAuthCode
-				// getTokens
-				// setTokens
+// Define a global flag to prevent repeated execution
+let stepUpCompleted = false;
 
-				/* Register Commands */
+// ✅ Safe Base64 URL decoding function
+function base64UrlDecode(str) {
+    try {
+        // Replace URL-safe characters
+        let base64 = str.replace(/_/g, '/').replace(/-/g, '+');
+        return JSON.parse(atob(base64)); // Decode and parse JSON
+    } catch (error) {
+        console.error("❌ Base64 Decoding Error:", error);
+        return null; // Return null on failure
+    }
+}
 
-				AuthProvider.registerCommand('getAuthCode', (e) => {
-					const { forceUpdate } = e.data || {};
-					if (forceUpdate) {
-						ndAuthLoginBtn.click(); // simulate the login click.
-						e.resolve();
-					} else {
-						const sData = {
-							authCode: brandAuthCode,
-							redirectUri: `${sRedirectURL}`,
-							nonce: sNonce,
-						};
+Genesys('registerPlugin', 'AuthProvider', (AuthProvider) => {
+    
+    let authToken = '';
 
-						if (maxAge) sData.maxAge = parseInt(maxAge);
-						if (bPKCE && verifier) sData.codeVerifier = verifier;
+    /* Register Commands */
+    AuthProvider.registerCommand('getAuthCode', (e) => {
+        const { forceUpdate } = e.data || {};
+        if (forceUpdate) {
+            ndAuthLoginBtn.click(); // Simulate login click
+            e.resolve();
+        } else {
+            const sData = {
+                authCode: brandAuthCode,
+                redirectUri: `${sRedirectURL}`,
+                nonce: sNonce,
+            };
+            if (maxAge) sData.maxAge = parseInt(maxAge);
+            if (bPKCE && verifier) sData.codeVerifier = verifier;
+            
+            e.resolve(sData);
+        }
+    });
 
-						e.resolve(sData);
-					}
-				});
+    AuthProvider.registerCommand('signIn', (e) => { 
+        console.log("signIn command triggered by Genesys");
 
-				AuthProvider.registerCommand('reAuthenticate', (e) => {
-					// Brand can handle this how ever they want.
-					// This command will be called when current refreshToken and/or authCode are no more valid. User needs to re-login here to provide us new authCode and/or refreshToken.
-					ndAuthLoginBtn.click(); // simulate the login click.
-					e.resolve();
-				});
+        brandLogin(); // Trigger login process
 
-				AuthProvider.subscribe('Auth.ready', () => {
-					bAuthenticated = AuthProvider.data('Auth.authenticated');
-					toggleLogin();
-				});
+        setTimeout(() => {
+            if (bAuthenticated) {
+                const data = {
+                    authCode: brandAuthCode,
+                    redirectUri: sRedirectURL,
+                    token: authToken,
+                    nonce: sNonce
+                };
 
-				AuthProvider.subscribe('Auth.authenticated', () => {
-					bAuthenticated = true;
-					hideProgress();
-					// LocalStorage usage is must for this product
-					localStorage.setItem('authFetching', false);  // eslint-disable-line
-					toggleLogin();
-				});
+                console.log("Publishing signedIn event:", data);
+                AuthProvider.publish('signedIn', data); 
 
-				AuthProvider.subscribe('Auth.error', (error) => {
-					const { message } = error.data || {};
+                e.resolve(data);
+            } else {
+                console.error("signIn failed!");
+                AuthProvider.publish('signInFailed', { error: "Login failed" });
+                e.reject("Login failed");
+            }
+        }, 2000);
+    });
 
-					hideProgress();
-					// 'message' here is provided by our API and its always expected to be in string. Any security scan results are false postive in this case.
-					console.log("Auth Error", message);
-					// LocalStorage usage is must for this product
-					localStorage.setItem('authFetching', false); // eslint-disable-line
-				});
+    // Authentication successful
+    AuthProvider.subscribe('Auth.authenticated', () => {
+        bAuthenticated = true;
+        hideProgress();
+        localStorage.setItem('authFetching', false);
+        toggleLogin();
 
-				AuthProvider.subscribe('Auth.authError', (error) => {
-					hideProgress();
-					// 'message' here is provided by our API and its always expected to be in string. Any security scan results are false postive in this case.
-					console.log("Auth Error", error);
-					// LocalStorage usage is must for this product
-					clearStorage();
-				});
+        try {
+            console.log("🔹 Received authToken:", authToken); 
 
-				/* Handlers */
+            // ✅ Ensure authToken exists and is valid
+            if (!authToken || typeof authToken !== "string" || !authToken.includes('.') || authToken.split('.').length !== 3) {
+                console.error("🚨 Invalid JWT format received! authToken:", authToken);
+                throw new Error("Invalid JWT format received.");
+            }
 
-				ndAuthLogoutBtn.onclick = function () {
-					AuthProvider.command('Auth.logout')
-						.finally(() => {
-							bAuthenticated = false;
-							if (authClient) authClient.signOut();
-							toggleLogin();
-							clearStorage();
-						});
-				};
+            // ✅ Extract the JWT payload (second part)
+            let tokenPayload = authToken.split('.')[1];
+            console.log("🔹 Encoded JWT Payload:", tokenPayload);
 
-				// Tell CXBus your plugin is ready (mandatory)
-				AuthProvider.ready();
-			});
+            // ✅ Decode JWT
+            let decodedToken = base64UrlDecode(tokenPayload);
+            if (!decodedToken) throw new Error("JWT decoding failed");
+
+            // ✅ Extract user data safely
+            let userEmail = decodedToken.email || "";
+            let userName = decodedToken.name || `${decodedToken.given_name || ""} ${decodedToken.family_name || ""}`.trim();
+
+            console.log("🔹 Extracted User Info -> Email:", userEmail, " | Name:", userName); 
+
+            if (!stepUpCompleted) {
+                stepUpCompleted = true;
+                Genesys("command", "MessagingService.stepUpConversation", { 
+                    token: authToken,
+                    message: {
+                        senderAddressInfo: {
+                            email: userEmail,
+                            name: userName
+                        }
+                    }
+                }, 
+                function success(response) {
+                    console.log("✅ Step-Up Conversation successful:", response);
+                },
+                function error(err) {
+                    console.error("❌ Step-Up Conversation failed:", err);
+                    stepUpCompleted = false; // ✅ Reset flag only if it fails
+                });
+            }
+        } catch (error) {
+            console.error("❌ JWT Decoding Error:", error);
+        }
+    });
+
+    // ✅ Handling session recovery
+    AuthProvider.subscribe('Auth.signedIn', () => {
+        console.log("🔹 Auth.signedIn event triggered, restoring authentication context...");
+
+        if (!stepUpCompleted) { // Prevent re-triggering
+            stepUpCompleted = true;
+            Genesys("command", "MessagingService.stepUpConversation", { 
+                token: authToken
+            }, 
+            function success(response) {
+                console.log("✅ Step-Up Conversation successful after signedIn:", response);
+            },
+            function error(err) {
+                console.error("❌ Step-Up Conversation retry failed:", err);
+                stepUpCompleted = false;
+            });
+        }
+    });
+
+    // ✅ Error handling
+    AuthProvider.subscribe('Auth.error', (error) => {
+        hideProgress();
+        console.error("❌ Auth Error", error);
+        localStorage.setItem('authFetching', false);
+    });
+
+    AuthProvider.subscribe('Auth.authError', (error) => {
+        hideProgress();
+        console.error("❌ Auth Error", error);
+        clearStorage();
+    });
+
+    /* ✅ Logout Handler */
+    ndAuthLogoutBtn.onclick = function () {
+        AuthProvider.command('Auth.logout')
+            .finally(() => {
+                bAuthenticated = false;
+                authToken = ''; 
+                stepUpCompleted = false; // ✅ Reset flag on logout
+                if (authClient) authClient.signOut();
+                toggleLogin();
+                clearStorage();
+            });
+    };
+
+    // ✅ Mark the plugin as ready
+    AuthProvider.ready();
+});
+
 		}
 
 	</script>
