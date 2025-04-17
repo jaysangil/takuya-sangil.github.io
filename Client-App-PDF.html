@@ -2,14 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Embedded PDF Viewer</title>
-  <style>body,html{margin:0;height:100%}iframe{border:none;width:100%;height:100%}</style>
+  <title>In‑Page PDF Viewer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; text-align: center; }
+    canvas { border: 1px solid #ccc; margin-top: 20px; }
+  </style>
 </head>
 <body>
-  <iframe src="test.pdf">
-    <p>Your browser can’t display PDFs inline.  
-      <a href="test.pdf" target="_blank">Open PDF in new tab</a>
-    </p>
-  </iframe>
+  <h1>Your PDF</h1>
+  <canvas id="pdf-canvas"></canvas>
+  <script>
+    const url = 'test.pdf';
+    pdfjsLib.getDocument(url).promise.then(pdf => 
+      pdf.getPage(1).then(page => {
+        const scale = 1.5;
+        const viewport = page.getViewport({ scale });
+        const canvas = document.getElementById('pdf-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        page.render({ canvasContext: ctx, viewport });
+      })
+    );
+  </script>
 </body>
 </html>
