@@ -4,20 +4,24 @@
   <meta charset="UTF-8">
   <title>PDF Redirect Page</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 50px;
-    }
-    button {
+    body { text-align: center; padding: 50px; font-family: Arial,sans-serif; }
+    a.button {
+      display: inline-block;
       padding: 12px 24px;
-      font-size: 16px;
-      cursor: pointer;
+      background: #007bff;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <h1>View the Test PDF</h1>
-  <button onclick="window.location.href='test.pdf'">Open PDF</button>
+
+  <!-- target="_top" forces the browser to navigate the *entire* window -->
+  <a href="test.pdf" class="button" target="_top" rel="noopener">
+    Open PDF
+  </a>
 </body>
 </html>
