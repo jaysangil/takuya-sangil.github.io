@@ -83,6 +83,8 @@
     <input type="text" id="first-name" placeholder="First Name" required>
     <input type="text" id="last-name" placeholder="Last Name" required>
     <input type="email" id="email-address" placeholder="Email Address" required>
+    <input type="text" id="account-number" placeholder="Account Number" required>
+    <input type="text" id="issue-type" placeholder="Issue Type" required>
 
     <!-- Test Button to trigger Genesys Messenger -->
     <button type="button" id="custom-launcher" onclick="toggleMessenger()">
@@ -122,6 +124,8 @@
     var firstName = document.getElementById('first-name').value;
     var lastName = document.getElementById('last-name').value;
     var emailAddress = document.getElementById('email-address').value;
+    var accountNumber = document.getElementById('account-number').value;
+    var issueType = document.getElementById('issue-type').value;
 
     Genesys("command", "Messenger.open");
 
@@ -130,7 +134,9 @@
         customAttributes: {
           name: firstName,
           surname: lastName,
-          email: emailAddress
+          email: emailAddress,
+          accountNumber: accountNumber,
+          issueType: issueType,
         }
       }
     });
