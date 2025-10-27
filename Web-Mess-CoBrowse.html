@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Form with Cobrowse</title>
+
+  <style>
+    body {
+      background: linear-gradient(to bottom, #ff7f50, #ff4500);
+      font-family: 'Arial', sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .form-container {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 300px;
+    }
+
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .form-container input {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin: 10px 0;
+      width: 93%;
+      transition: border 0.3s ease;
+    }
+
+    .form-container input:focus {
+      border-color: #ff4500;
+      outline: none;
+    }
+
+    .form-container button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #ff4500;
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .form-container button:hover {
+      background: #e03e00;
+    }
+
+    /* Cobrowse iframe styling */
+    #cobrowseFrame {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 900px;
+      height: 600px;
+      border: 2px solid #333;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      display: none;
+    }
+
+    #cobrowseFrame.active {
+      display: block;
+    }
+  </style>
+</head>
+<body onload="hideMessenger()">
+
+<div class="form-container">
+  <h2>Web Messaging Test</h2>
+
+  <form>
+    <input type="text" id="first-name" placeholder="First Name" required>
+    <input type="text" id="last-name" placeholder="Last Name" required>
+    <input type="email" id="email-address" placeholder="Email Address" required>
+    <input type="text" id="account-number" placeholder="Account Number" required>
+    <input type="text" id="issue-type" placeholder="Issue Type" required>
+
+    <button type="button" id="custom-launcher" onclick="toggleMessenger()">
+      Launch Messenger
+    </button>
+  </form>
+</div>
+
+<!-- Cobrowse iframe container -->
+<iframe id="cobrowseFrame"></iframe>
+
+<script type="text/javascript" charset="utf-8">
+  (function (g, e, n, es, ys) {
+      g['_genesysJs'] = e;
+      g[e] = g[e] || function () {
+          (g[e].q = g[e].q || []).push(arguments);
+      };
+
+      g[e].t = new Date().getTime();
+      g[e].c = es;
+
+      ys = document.createElement('script');
+      ys.async = true;
+      ys.src = n;
+      ys.charset = 'utf-8';
+      document.head.appendChild(ys);
+  })(window, 'Genesys', 'https://apps.usw2.pure.cloud/genesys-bootstrap/genesys.min.js', {
+      environment: 'prod-usw2',
+      deploymentId: '5a524f85-5c4c-4044-adc9-ea43a2acf358'
+  });
+
+  function hideMessenger() {
+    Genesys("command", "Messenger.close");
+  }
+
+  function toggleMessenger() {
+    var firstName = document.getElementById('first-name').value;
+    var lastName = document.getElementById('last-name').value;
+    var emailAddress = document.getElementById('email-address').value;
+    var accountNumber = document.getElementById('account-number').value;
+    var issueType = document.getElementById('issue-type').value;
+
+    Genesys("command", "Messenger.open");
+
+    Genesys("command", "Database.set", {
+      messaging: {
+        customAttributes: {
+          name: firstName,
+          surname: lastName,
+          email: emailAddress,
+          PT_URLPop: window.location.href,
+          PT_SearchValue: accountNumber || "N/A",
+          PT_TransferContext: issueType || "General Inquiry"
+        }
+      }
+    });
+  }
+
+  // Register the Cobrowse plugin
+  Genesys("subscribe", "Messenger.ready", function() {
+    console.log('Messenger is ready, registering Cobrowse plugin');
+    
+    Genesys("registerPlugin", "CobrowseService", function(pluginConfig) {
+      const region = 'usw2'; // Match your deployment region
+      const language = pluginConfig.data.language || 'en-us';
+      const conversationId = pluginConfig.data.conversationId;
+      
+      console.log('Cobrowse plugin activated', {
+        conversationId: conversationId,
+        language: language
+      });
+
+      // Create and configure the cobrowse iframe
+      const iframe = document.getElementById('cobrowseFrame');
+      const url = new URL('https://apps.usw2.pure.cloud/cobrowse-next/viewer.html');
+      url.searchParams.append('conversationId', conversationId);
+      url.searchParams.append('lang', language);
+      
+      iframe.setAttribute('src', url.href);
+      iframe.classList.add('active');
+
+      // Return cleanup function
+      return function() {
+        console.log('Cobrowse session ended, cleaning up');
+        iframe.classList.remove('active');
+        iframe.setAttribute('src', '');
+      };
+    });
+  });
+
+  // Listen for cobrowse session end from iframe
+  window.addEventListener('message', function(event) {
+    // Security: Verify the event origin matches your Genesys environment
+    if (event.origin !== 'https://apps.usw2.pure.cloud') {
+      return;
+    }
+
+    if (event.data && event.data.action === 'closeScreenShare') {
+      console.log('Cobrowse session closed by agent');
+      const iframe = document.getElementById('cobrowseFrame');
+      iframe.classList.remove('active');
+      iframe.setAttribute('src', '');
+      
+      // Optionally notify Genesys Messenger
+      Genesys("command", "Messenger.open");
+    }
+
+    // Optional: Handle join code and session ID
+    if (event.data && event.data.joinCode && event.data.sessionId) {
+      console.log('Cobrowse session info:', {
+        joinCode: event.data.joinCode,
+        sessionId: event.data.sessionId
+      });
+    }
+  });
+
+  // Subscribe to Launcher.hidden event
+  Genesys("subscribe", "Launcher.hidden", function () {
+    console.log('Messenger is hidden');
+  });
+</script>
+
+<!-- Genesys Journey SDK -->
+<script>
+  (function(a, t, c, l, o, u, d) { 
+    a['_genesysJourneySdk'] = o;
+    a[o] = a[o] || function() {
+      (a[o].q = a[o].q ||[]).push(arguments)
+    };
+    a[o].l = 1 * new Date();
+    
+    u = t.createElement('script');
+    u.async = 1;
+    u.src = l;
+    u.charset = 'utf-8';
+    
+    d = t.getElementsByTagName('script')[0];
+    d.parentNode.insertBefore(u, d); 
+  })(window, document, 'https://apps.usw2.pure.cloud/journey/sdk/js/web/v1/ac.js', 'ac');
+  
+  ac('init', '977ce6f8-947b-4f2a-9aaf-70c5281aeff2', { region: 'usw2' });
+  ac('pageview');
+</script>
+
+</body>
+</html>
